@@ -39,6 +39,7 @@
 #include "G4MaterialPropertyVector.hh"
 #include "G4MaterialTable.hh"
 #include "G4Material.hh"
+#include "HumanCell.hh"
 
 
 DetectorConstruction::DetectorConstruction()
@@ -55,96 +56,57 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-  // Get nist material manager
+
+
+//  ============== Just world  ===================================
   G4NistManager* nist = G4NistManager::Instance();
+  G4Material* world_mat = nist->FindOrBuildMaterial("G4_Galactic");
 
-  // Envelope parameters
-  //
-  env_mat = nist->FindOrBuildMaterial(env_mat_name);
+  G4Box* solidWorld = new G4Box
+  (
+    "World",                       //its name
+    0.5*world_sizeXY,
+    0.5*world_sizeXY,
+    0.5*world_sizeZ
+  );
 
-  // Option to switch on/off checking of volumes overlaps
-  //
+  G4LogicalVolume* logicWorld = new G4LogicalVolume
+  (
+    solidWorld,          //its solid
+    world_mat,           //its material
+    "World"
+  );            //its name
 
-
-  world_mat = nist->FindOrBuildMaterial(world_mat_name);
-
-  G4Box* solidWorld =
-    new G4Box("World",                       //its name
-       0.5*world_sizeXY, 0.5*world_sizeXY, 0.5*world_sizeZ);     //its size
-
-    logicWorld =
-    new G4LogicalVolume(solidWorld,          //its solid
-                        world_mat,           //its material
-                        "World");            //its name
-
-  G4VPhysicalVolume* physWorld =
-    new G4PVPlacement(0,                     //no rotation
+  G4VPhysicalVolume* physWorld = new G4PVPlacement(
+                      0,                     //no rotation
                       G4ThreeVector(),       //at (0,0,0)
                       logicWorld,            //its logical volume
                       "World",               //its name
                       0,                     //its mother  volume
                       false,                 //no boolean operation
                       0,                     //copy number
-                      checkOverlaps);        //overlaps checking
+                      true                   //overlaps checking
+  );
 
-  //
-  // Envelope
-  //
-  G4Box* solidEnv =
-    new G4Box("Envelope",                    //its name
-        0.5*env_sizeXY, 0.5*env_sizeXY, 0.5*env_sizeZ); //its size
-
-  logicEnv =
-    new G4LogicalVolume(solidEnv,            //its solid
-                        env_mat,             //its material
-                        "Envelope");         //its name
-
-  physEnv = new G4PVPlacement(0,                       //no rotation
-                    G4ThreeVector(),         //at (0,0,0)
-                    logicEnv,                //its logical volume
-                    "Envelope",              //its name
-                    logicWorld,              //its mother  volume
-                    false,                   //no boolean operation
-                    0,                       //copy number
-                    checkOverlaps);          //overlaps checking
-
-  ConstructScoringVolumes();
+//  ============== end world  of world defention ===================================
 
 
-// Set maximal step size
-  //G4double maxStep = 0.1 * CLHEP::mm;
-  //fStepLimit = new G4UserLimits(maxStep);
-  //logicWorld->SetUserLimits(fStepLimit);
-  //logicEnv->SetUserLimits(fStepLimit);
-  //logictempl->SetUserLimits(fStepLimit);
-  //logictemp_pl_plate->SetUserLimits(fStepLimit);
-  //logicShape2->SetUserLimits(fStepLimit);
-  //
-  //always return the physical World
-  //
+
+  //ConstructScoringVolumes();
+
+
+  auto pCell= new HumanCell ("HumanCell", 0 * um, 0 * um, 0 * um, logicWorld, 10*nm );
+
+
+
   return physWorld;
 }
 
 void DetectorConstruction::ConstructScoringVolumes(){
 
-  G4NistManager* nist = G4NistManager::Instance();
 
-//========platic A-150-tissue  with incorporated Bi particles =======================
-  G4double density =  admix_c + (rho_tissue/rho_admix)*(rho_admix - admix_c);
-  G4double admix_fr = admix_c /density;// mass fractions
-  G4int ncomp = 2;
 
-  TissueWithAdmixture = new G4Material(TissueWithAdmixture_name, density, ncomp);
-  //Tissue = nist->FindOrBuildMaterial(Tissue_name); //for standard NIST materials
-
-  G4HumanPhantomMaterial* material = new G4HumanPhantomMaterial();
-  ///material->DefineMaterials();
-  Tissue  = material->GetMaterial(Tissue_name);
-
-  Admixture = nist->FindOrBuildMaterial(Admixture_name);
-  TissueWithAdmixture->AddMaterial(Tissue, 1 - admix_fr);
-  TissueWithAdmixture->AddMaterial(Admixture, admix_fr);
-  //============================================================================
+/*
 
   G4int  N_cells_XY = int(env_sizeXY/cell_size_XY);
   G4int  N_cells_Z = int(env_sizeZ/cell_size_Z);
@@ -161,7 +123,6 @@ void DetectorConstruction::ConstructScoringVolumes(){
   G4VPhysicalVolume* phys_vol;
   G4double pos_X, pos_Y, pos_Z;
 
-// construct template to pu Bi plate inside
 
   for (G4int i = 0; i<N_cells_XY; i++){
     for (G4int j = 0; j<N_cells_XY; j++){
@@ -192,6 +153,8 @@ void DetectorConstruction::ConstructScoringVolumes(){
       }
     }
   };
+
+*/
 
 
 

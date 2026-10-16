@@ -63,48 +63,19 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 // Detector parameters
 
 
-    const G4double cell_size_XY = 10.0*um, cell_size_Z = 10.0*um;
-    const G4double env_sizeXY = 50*um, env_sizeZ = 50*um;
-    const G4ThreeVector pos2 = G4ThreeVector(0, 0, 0.0*um);
-    G4double world_sizeXY = 1.5*env_sizeXY;
-    G4double world_sizeZ  = 1.5*env_sizeZ;
+    //const G4double cell_size_XY = 10.0*um, cell_size_Z = 10.0*um;
+    const G4double env_sizeXY = 25*um, env_sizeZ = 25*um;
+    const G4ThreeVector pos2 = G4ThreeVector(0*um, 0*um, 0.0*um);
+    G4double world_sizeXY = 1.4*env_sizeXY;
+    G4double world_sizeZ  = 1.4*env_sizeZ;
 
-//========platic A-150-tissue  with incorporated Bi particles =======================
-    const G4String env_mat_name = "G4_WATER";
-    const G4String world_mat_name = "G4_AIR";
-    const G4String Admixture_name = "G4_Bi";
-    //const G4String Tissue_name = "G4_A-150_TISSUE";
-    const G4String Tissue_name = "soft_tissue"; //soft tissues from G4HumanPhantomMaterial
-
-    const G4String TissueWithAdmixture_name = "TissueWithAdmixture";
-
-    //G4double  rho_tissue= 1.00*g/cm3; //this is just water
-    G4double  rho_tissue= 0.9869*g/cm3; //soft tissue
-    G4double  rho_admix = 9.79*g/cm3;
-    G4double admix_c = 10000*mg/L; //concetration in  mg per Litre ++ as per Kolobov++++
-
-
-    G4Material* TissueWithAdmixture;
-    G4Material* Tissue;
-    G4Material* Admixture;
-  //  G4Material* soft;
 //==================================================================================
 
-
-
-
-//
-
-    //G4Material* shape2_mat;
-
-    G4Material* env_mat;
-    G4Material* world_mat;
-    G4LogicalVolume* logicEnv,*logicWorld,*logicShape2,*logictempl,*logictemp_pl_plate;
-    G4VPhysicalVolume* physEnv;
-    G4bool checkOverlaps = true;
-    std::vector<G4double> vPos_X;
-    std::vector<G4double> vPos_Y;
-    std::vector<G4double> vPos_Z;
+// =========== vectors of coordinates of scoring volumes =========================
+std::vector<G4double> vPos_X;
+std::vector<G4double> vPos_Y;
+std::vector<G4double> vPos_Z;
+//==============================================================================
 
 
   private:

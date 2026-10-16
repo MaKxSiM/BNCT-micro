@@ -18,11 +18,11 @@ public:
     virtual void BeginOfRunAction(const G4Run*);
     virtual void EndOfRunAction(const G4Run*);
 
-    const G4double MinZ = 0.*CLHEP::cm;
-    const G4double MaxZ = 100*CLHEP::cm;
+    const G4double MinZ = 0.*CLHEP::um;
+    const G4double MaxZ = 100*CLHEP::um;
 
-    const G4double stepfordEdz = 1.* CLHEP::mm;
-    const G4double stepforfluence = 1.* CLHEP::mm;
+    const G4double stepfordEdz = 1.* CLHEP::um;
+    const G4double stepforfluence = 1.* CLHEP::um;
 
 };
 
