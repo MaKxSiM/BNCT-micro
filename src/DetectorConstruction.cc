@@ -39,8 +39,19 @@
 #include "G4MaterialPropertyVector.hh"
 #include "G4MaterialTable.hh"
 #include "G4Material.hh"
-#include "HumanCell.hh"
+//#include "HumanCell.hh"
 
+#include "Geometry/Solids/SCell.hh"
+#include "Geometry/LVs/LCell.hh"
+#include "Geometry/PVs/PCell.hh"
+
+#include "G4SystemOfUnits.hh"
+#include "G4Ellipsoid.hh"
+#include "G4IntersectionSolid.hh"
+
+#include "Geometry/Solids/SNucleus.hh"
+#include "Geometry/LVs/LNucleus.hh"
+#include "Geometry/PVs/PNucleus.hh"
 
 DetectorConstruction::DetectorConstruction()
 {}
@@ -61,6 +72,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 //  ============== Just world  ===================================
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* world_mat = nist->FindOrBuildMaterial("G4_Galactic");
+
 
   G4Box* solidWorld = new G4Box
   (
@@ -91,70 +103,83 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 //  ============== end world  of world defention ===================================
 
 
+// define solids 
+  G4Material* cell_mat = nist->FindOrBuildMaterial("G4_WATER");
+  auto fSolEnv = new G4Box
+  (
+    "Envelope",                       //its name
+    0.5*env_sizeXY,
+    0.5*env_sizeXY,
+    0.5*env_sizeZ
+  );
 
-  //ConstructScoringVolumes();
+  auto fLogEnv = new G4LogicalVolume
+  (
+    fSolEnv,          //its solid
+    cell_mat,           //its material
+    "logEnvelope"
+  );  
+
+ 
+  G4VPhysicalVolume* fPhysEnv = new G4PVPlacement(
+                      0,                     //no rotation
+                      G4ThreeVector(),       //at (0,0,0)
+                      fLogEnv,            //its logical volume
+                      "World",               //its name
+                      logicWorld,                     //its mother  volume
+                      false,                 //no boolean operation
+                      0,                     //copy number
+                      true                   //overlaps checking
+  );
 
 
-  auto pCell= new HumanCell ("HumanCell", 0 * um, 0 * um, 0 * um, logicWorld, 10*nm );
+  auto fSolCell = new SCell("Cell", 30*micrometer,20*micrometer);
+  auto fLogCell = new LCell(fSolCell, cell_mat, "logCell");
 
+  auto fSolNucleus = new SNucleus("SolNucleus",10*micrometer,10*micrometer,10*micrometer);
+  auto fLogNucleus = new LNucleus(fSolNucleus,cell_mat,"logNucleus");
+  auto fPhysNucleus = new PNucleus(                      0,                     //no rotation
+                      G4ThreeVector(0,0,0),       //at (0,0,0)
+                      fLogNucleus,            //its logical volume
+                      "PhysNucleus",               //its name
+                      fLogCell,                     //its mother  volume
+                      true,                 //no boolean operation
+                      0,                     //copy number
+                      true                   //overlaps checking))
+        );
 
+  std::vector<G4PVPlacement*> Cells;
+  G4int N = 5;
+  G4double dbox = 45*micrometer; 
 
+  G4double bl = (N/2==0)? dbox/2 -(N/2)*dbox: ((N-1)/2)*dbox;
+  G4String tempstring;
+
+  for (int i=0;i<N;i++){
+    for (int j=0;j<N;j++){
+      for (int k=0;k<N;k++){
+        tempstring = "cell_" + std::to_string(i) + "_" + std::to_string(j) + "_" + std::to_string(k);
+        Cells.push_back(new PCell(                      0,                     //no rotation
+                      G4ThreeVector(-bl + i*dbox,-bl + j*dbox,-bl + k*dbox),       //at (0,0,0)
+                      fLogCell,            //its logical volume
+                      tempstring,               //its name
+                      fLogEnv,                     //its mother  volume
+                      true,                 //no boolean operation
+                      0,                     //copy number
+                      true                   //overlaps checking))
+        ));
+      }
+    }
+  }
   return physWorld;
+
 }
 
 void DetectorConstruction::ConstructScoringVolumes(){
 
 
 
-/*
 
-  G4int  N_cells_XY = int(env_sizeXY/cell_size_XY);
-  G4int  N_cells_Z = int(env_sizeZ/cell_size_Z);
-
-  G4Box* templatebox =  new G4Box("Cube", 0.5*cell_size_XY, 0.5*cell_size_XY, 0.5*cell_size_Z);     //its size
-
-  logictempl = new G4LogicalVolume(templatebox,          //its solid
-                        nist->FindOrBuildMaterial(env_mat_name),           //its material
-                        "Cube");
-
-  G4String temp_str;
-  const G4String pref = "Cube_";
-
-  G4VPhysicalVolume* phys_vol;
-  G4double pos_X, pos_Y, pos_Z;
-
-
-  for (G4int i = 0; i<N_cells_XY; i++){
-    for (G4int j = 0; j<N_cells_XY; j++){
-      for (G4int k = 0; k<N_cells_Z; k++){
-
-          temp_str = pref +std::to_string(i)+"_"+std::to_string(j)+"_"+std::to_string(k);
-          pos_X = -0.5*(env_sizeXY-cell_size_XY)+ cell_size_XY*i;
-          pos_Y = -0.5*(env_sizeXY-cell_size_XY)+ cell_size_XY*j;
-          pos_Z = -0.5*(env_sizeZ-cell_size_Z)+ cell_size_Z*k;
-
-          vPos_X.push_back(pos_X);
-          vPos_Y.push_back(pos_Y);
-          vPos_Z.push_back(pos_Z);
-
-          //std::cout<<"       DetectorConstruction   " << pos_X << "   "
-          //<<pos_Y<< "   " <<pos_Z<< std::endl;
-
-            phys_vol = new G4PVPlacement(0,                    //no rotation
-                    G4ThreeVector(pos_X, pos_Y, pos_Z),
-                    logictempl,                //its logical volume
-                    temp_str,                     //its name
-                    logicEnv,                     //its mother  volume
-                    false,                        //no boolean operation
-                    0,                            //copy number
-                    checkOverlaps);                        //overlaps checking
-                    fScoringVolumes.push_back(phys_vol);
-
-      }
-    }
-  };
-
-*/
 
 
 

@@ -64,7 +64,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
 
     //const G4double cell_size_XY = 10.0*um, cell_size_Z = 10.0*um;
-    const G4double env_sizeXY = 25*um, env_sizeZ = 25*um;
+    const G4double env_sizeXY = 250*um, env_sizeZ = 250*um;
     const G4ThreeVector pos2 = G4ThreeVector(0*um, 0*um, 0.0*um);
     G4double world_sizeXY = 1.4*env_sizeXY;
     G4double world_sizeZ  = 1.4*env_sizeZ;
